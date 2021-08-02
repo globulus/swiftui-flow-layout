@@ -24,8 +24,5 @@ let package = Package(
         .target(
             name: "SwiftUIFlowLayout",
             dependencies: []),
-        .testTarget(
-            name: "SwiftUIFlowLayoutTests",
-            dependencies: ["SwiftUIFlowLayout"]),
     ]
 )

@@ -4,14 +4,20 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
   let mode: Mode
   @Binding var binding: B
   let items: [T]
-  let viewMapping: (T) -> V
+  let itemSpacing: CGFloat
+  @ViewBuilder let viewMapping: (T) -> V
 
   @State private var totalHeight: CGFloat
 
-  public init(mode: Mode, binding: Binding<B>, items: [T], viewMapping: @escaping (T) -> V) {
+  public init(mode: Mode,
+              binding: Binding<B>,
+              items: [T],
+              itemSpacing: CGFloat = 4,
+              @ViewBuilder viewMapping: @escaping (T) -> V) {
     self.mode = mode
     _binding = binding
     self.items = items
+    self.itemSpacing = itemSpacing
     self.viewMapping = viewMapping
     _totalHeight = State(initialValue: (mode == .scrollable) ? .zero : .infinity)
   }
@@ -37,7 +43,7 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
     return ZStack(alignment: .topLeading) {
       ForEach(self.items, id: \.self) { item in
         self.viewMapping(item)
-          .padding([.horizontal, .vertical], 4)
+          .padding([.horizontal, .vertical], itemSpacing)
           .alignmentGuide(.leading, computeValue: { d in
             if (abs(width - d.width) > g.size.width) {
               width = 0

@@ -8,20 +8,27 @@ The end result looks like this:
 
 * The layout algorithm behaves differently if your FlowLayout is nested in a `VStack` or a scrollable parent, such as `ScrollView` or a `List`. Therefore, there's the **Mode enum and mode property**.
 
-### Recipe
+## Installation
 
-Check out [this recipe](https://swiftuirecipes.com/blog/flow-layout-in-swiftui) for in-depth description of the component and its code. Check out [SwiftUIRecipes.com](https://swiftuirecipes.com) for more **SwiftUI recipes**!
+This component is distrubuted as a **Swift package**. Just add this URL to your package list:
 
-### Sample usage
+```text
+https://github.com/globulus/swiftui-flow-layout
+```
+
+## Sample usage
 
 ```swift
+import SwiftUIFlowLayout
+
 struct FlowLayout_Previews: PreviewProvider {
   static var previews: some View {
-    FlowLayoutView(mode: .scrollable,
-                               binding: .constant(5),
-                               items: ["Some long item here", "And then some longer one",
-                                          "Short", "Items", "Here", "And", "A", "Few", "More", 
-                                          "And then a very very very long one"]) {
+    FlowLayout(mode: .scrollable,
+               binding: .constant(5),
+               items: ["Some long item here", "And then some longer one",
+                       "Short", "Items", "Here", "And", "A", "Few", "More", 
+                       "And then a very very very long one"],
+               itemSpacing: 4) {
       Text($0)
         .font(.system(size: 12))
         .foregroundColor(.black)
@@ -34,7 +41,14 @@ struct FlowLayout_Previews: PreviewProvider {
 }
 ```
 
-### Installation
+## Recipe
 
-This component is distrubuted as a **Swift package**. 
+Check out [this recipe](https://swiftuirecipes.com/blog/flow-layout-in-swiftui) for in-depth description of the component and its code. Check out [SwiftUIRecipes.com](https://swiftuirecipes.com) for more **SwiftUI recipes**!
+
+## Changelog
+
+* 1.0.2 - Fixed layout issues with multiline items.
+* 1.0.1 - Added `itemSpacing` parameter.
+* 1.0.0 - Initial release.
+
 

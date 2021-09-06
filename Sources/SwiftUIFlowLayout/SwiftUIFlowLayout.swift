@@ -40,6 +40,7 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
   private func content(in g: GeometryProxy) -> some View {
     var width = CGFloat.zero
     var height = CGFloat.zero
+    var lastHeight = CGFloat.zero
     return ZStack(alignment: .topLeading) {
       ForEach(self.items, id: \.self) { item in
         self.viewMapping(item)
@@ -47,8 +48,9 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
           .alignmentGuide(.leading, computeValue: { d in
             if (abs(width - d.width) > g.size.width) {
               width = 0
-              height -= d.height
+              height -= lastHeight
             }
+            lastHeight = d.height
             let result = width
             if item == self.items.last {
               width = 0
@@ -80,5 +82,23 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
 
   public enum Mode {
     case scrollable, vstack
+  }
+}
+
+struct FlowLayout_Previews: PreviewProvider {
+  static var previews: some View {
+    FlowLayout(mode: .scrollable,
+                               binding: .constant(5),
+                               items: ["Some long item here", "And then some longer one",
+                                          "Short", "Items", "Here", "And", "A", "Few", "More",
+                                          "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]) {
+      Text($0)
+        .font(.system(size: 12))
+        .foregroundColor(.black)
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 4)
+                               .border(Color.gray)
+                               .foregroundColor(Color.gray))
+    }.padding()
   }
 }

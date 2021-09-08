@@ -24,7 +24,6 @@ import SwiftUIFlowLayout
 struct FlowLayout_Previews: PreviewProvider {
   static var previews: some View {
     FlowLayout(mode: .scrollable,
-               binding: .constant(5),
                items: ["Some long item here", "And then some longer one",
                        "Short", "Items", "Here", "And", "A", "Few", "More", 
                        "And then a very very very long one"],
@@ -47,6 +46,7 @@ Check out [this recipe](https://swiftuirecipes.com/blog/flow-layout-in-swiftui) 
 
 ## Changelog
 
+* 1.0.3 - Removed `Hashable` constraint on data. Added convenience initializer when refresh binding isn't used.
 * 1.0.2 - Fixed layout issues with multiline items.
 * 1.0.1 - Added `itemSpacing` parameter.
 * 1.0.0 - Initial release.

@@ -1,19 +1,21 @@
 import SwiftUI
 
-public struct FlowLayout<B, T: Hashable, V: View>: View {
+public let flowLayoutDefaultItemSpacing: CGFloat = 4
+
+public struct FlowLayout<RefreshBinding, Data, ItemView: View>: View {
   let mode: Mode
-  @Binding var binding: B
-  let items: [T]
+  @Binding var binding: RefreshBinding
+  let items: [Data]
   let itemSpacing: CGFloat
-  @ViewBuilder let viewMapping: (T) -> V
+  @ViewBuilder let viewMapping: (Data) -> ItemView
 
   @State private var totalHeight: CGFloat
 
   public init(mode: Mode,
-              binding: Binding<B>,
-              items: [T],
-              itemSpacing: CGFloat = 4,
-              @ViewBuilder viewMapping: @escaping (T) -> V) {
+              binding: Binding<RefreshBinding>,
+              items: [Data],
+              itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+              @ViewBuilder viewMapping: @escaping (Data) -> ItemView) {
     self.mode = mode
     _binding = binding
     self.items = items
@@ -41,31 +43,33 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
     var width = CGFloat.zero
     var height = CGFloat.zero
     var lastHeight = CGFloat.zero
+    let itemCount = items.count
     return ZStack(alignment: .topLeading) {
-      ForEach(self.items, id: \.self) { item in
-        self.viewMapping(item)
-          .padding([.horizontal, .vertical], itemSpacing)
-          .alignmentGuide(.leading, computeValue: { d in
-            if (abs(width - d.width) > g.size.width) {
-              width = 0
-              height -= lastHeight
-            }
-            lastHeight = d.height
-            let result = width
-            if item == self.items.last {
-              width = 0
-            } else {
-              width -= d.width
-            }
-            return result
-          })
-          .alignmentGuide(.top, computeValue: { d in
-            let result = height
-            if item == self.items.last {
-              height = 0
-            }
-            return result
-          })
+        ForEach(0..<itemCount) { index in
+            let item = items[index]
+            viewMapping(item)
+              .padding([.horizontal, .vertical], itemSpacing)
+              .alignmentGuide(.leading, computeValue: { d in
+                if (abs(width - d.width) > g.size.width) {
+                  width = 0
+                  height -= lastHeight
+                }
+                lastHeight = d.height
+                let result = width
+                if index == itemCount - 1 {
+                  width = 0
+                } else {
+                  width -= d.width
+                }
+                return result
+              })
+              .alignmentGuide(.top, computeValue: { d in
+                let result = height
+                if index == itemCount - 1 {
+                  height = 0
+                }
+                return result
+              })
         }
       }
       .background(viewHeightReader($totalHeight))
@@ -85,13 +89,24 @@ public struct FlowLayout<B, T: Hashable, V: View>: View {
   }
 }
 
+public extension FlowLayout where RefreshBinding == Never? {
+    init(mode: Mode,
+         items: [Data],
+         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+         @ViewBuilder viewMapping: @escaping (Data) -> ItemView) {
+        self.init(mode: mode,
+                  binding: .constant(nil),
+                  items: items,
+                  itemSpacing: itemSpacing,
+                  viewMapping: viewMapping)
+    }
+}
 struct FlowLayout_Previews: PreviewProvider {
   static var previews: some View {
     FlowLayout(mode: .scrollable,
-                               binding: .constant(5),
-                               items: ["Some long item here", "And then some longer one",
-                                          "Short", "Items", "Here", "And", "A", "Few", "More",
-                                          "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]) {
+               items: ["Some long item here", "And then some longer one",
+                      "Short", "Items", "Here", "And", "A", "Few", "More",
+                      "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]) {
       Text($0)
         .font(.system(size: 12))
         .foregroundColor(.black)

@@ -45,8 +45,7 @@ public struct FlowLayout<RefreshBinding, Data, ItemView: View>: View {
     var lastHeight = CGFloat.zero
     let itemCount = items.count
     return ZStack(alignment: .topLeading) {
-        ForEach(0..<itemCount) { index in
-            let item = items[index]
+        ForEach(Array(items.enumerated()), id: \.offset) { index, item in
             viewMapping(item)
               .padding([.horizontal, .vertical], itemSpacing)
               .alignmentGuide(.leading, computeValue: { d in
@@ -101,6 +100,7 @@ public extension FlowLayout where RefreshBinding == Never? {
                   viewMapping: viewMapping)
     }
 }
+
 struct FlowLayout_Previews: PreviewProvider {
   static var previews: some View {
     FlowLayout(mode: .scrollable,
@@ -115,5 +115,43 @@ struct FlowLayout_Previews: PreviewProvider {
                                .border(Color.gray)
                                .foregroundColor(Color.gray))
     }.padding()
+  }
+}
+
+struct TestWithDeletion: View {
+    @State private var items = ["Some long item here", "And then some longer one",
+                                "Short", "Items", "Here", "And", "A", "Few", "More",
+                                "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]
+    
+    var body: some View {
+        VStack {
+        Button("Delete all") {
+            items.removeAll()
+        }
+            Button("Restore") {
+                items = ["Some long item here", "And then some longer one",
+                         "Short", "Items", "Here", "And", "A", "Few", "More",
+                         "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]
+            }
+            Button("Add one") {
+                items.append("\(Date().timeIntervalSince1970)")
+            }
+        FlowLayout(mode: .vstack,
+                   items: items) {
+          Text($0)
+            .font(.system(size: 12))
+            .foregroundColor(.black)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 4)
+                                   .border(Color.gray)
+                                   .foregroundColor(Color.gray))
+        }.padding()
+        }
+    }
+}
+
+struct TestWithDeletion_Previews: PreviewProvider {
+  static var previews: some View {
+    TestWithDeletion()
   }
 }

@@ -46,6 +46,7 @@ Check out [this recipe](https://swiftuirecipes.com/blog/flow-layout-in-swiftui) 
 
 ## Changelog
 
+* 1.0.4 - Fixed crash when changing item count.
 * 1.0.3 - Removed `Hashable` constraint on data. Added convenience initializer when refresh binding isn't used.
 * 1.0.2 - Fixed layout issues with multiline items.
 * 1.0.1 - Added `itemSpacing` parameter.

@@ -16,6 +16,12 @@ This component is distrubuted as a **Swift package**. Just add this URL to your 
 https://github.com/globulus/swiftui-flow-layout
 ```
 
+You can also use **CocoaPods**:
+
+```ruby
+pod 'SwiftUIFlowLayout', '~> 1.0.4'
+```
+
 ## Sample usage
 
 ```swift

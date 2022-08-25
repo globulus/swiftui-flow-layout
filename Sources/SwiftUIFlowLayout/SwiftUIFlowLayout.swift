@@ -71,22 +71,32 @@ public struct FlowLayout<RefreshBinding, Data, ItemView: View>: View {
               })
         }
       }
-      .background(viewHeightReader($totalHeight))
-  }
-
-  private func viewHeightReader(_ binding: Binding<CGFloat>) -> some View {
-    return GeometryReader { geo -> Color in
-      DispatchQueue.main.async {
-        binding.wrappedValue = geo.frame(in: .local).size.height
-      }
-      return .clear
-    }
+      .background(HeightReaderView(binding: $totalHeight))
   }
 
   public enum Mode {
     case scrollable, vstack
   }
 }
+
+private struct HeightPreferenceKey: PreferenceKey {
+  static func reduce(value _: inout CGFloat, nextValue _: () -> CGFloat) {}
+  static var defaultValue: CGFloat = 0
+}
+
+private struct HeightReaderView: View {
+  @Binding var binding: CGFloat
+  var body: some View {
+    GeometryReader { geo in
+      Color.clear
+           .preference(key: HeightPreferenceKey.self, value: geo.frame(in: .local).size.height)
+    }
+    .onPreferenceChange(HeightPreferenceKey.self) { h in
+      binding = h
+    }
+  }
+}
+
 
 public extension FlowLayout where RefreshBinding == Never? {
     init(mode: Mode,

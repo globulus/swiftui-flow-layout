@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'SwiftUIFlowLayout'
-  s.version          = '1.0.4'
+  s.version          = '1.0.5'
   s.summary          = 'A Flow Layout is a container that orders its views sequentially, breaking into a new "line" according to the available width of the screen.'
   s.homepage         = 'https://github.com/globulus/swiftui-flow-layout'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }

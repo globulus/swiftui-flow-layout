@@ -2,9 +2,9 @@ import SwiftUI
 
 public let flowLayoutDefaultItemSpacing: CGFloat = 4
 
-public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
+public struct FlowLayout<Trigger, Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
   let mode: Mode
-  @Binding var binding: RefreshBinding
+  @Binding var trigger: Trigger
   let data: Data
   let itemSpacing: CGFloat
   @ViewBuilder let content: (Data.Element) -> Content
@@ -12,12 +12,12 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: 
   @State private var totalHeight: CGFloat
 
   public init(mode: Mode,
-              binding: Binding<RefreshBinding>,
+              trigger: Binding<Trigger>,
               data: Data,
               itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
               @ViewBuilder content: @escaping (Data.Element) -> Content) {
     self.mode = mode
-    _binding = binding
+    _trigger = trigger
     self.data = data
     self.itemSpacing = itemSpacing
     self.content = content
@@ -71,7 +71,7 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: 
               })
         }
       }
-      .background(HeightReaderView(binding: $totalHeight))
+      .background(HeightReaderView(trigger: $totalHeight))
   }
 
   public enum Mode {
@@ -85,26 +85,26 @@ private struct HeightPreferenceKey: PreferenceKey {
 }
 
 private struct HeightReaderView: View {
-  @Binding var binding: CGFloat
+  @Binding var trigger: CGFloat
   var body: some View {
     GeometryReader { geo in
       Color.clear
            .preference(key: HeightPreferenceKey.self, value: geo.frame(in: .local).size.height)
     }
     .onPreferenceChange(HeightPreferenceKey.self) { h in
-      binding = h
+      trigger = h
     }
   }
 }
 
 
-public extension FlowLayout where RefreshBinding == Never? {
+public extension FlowLayout where Trigger == Never? {
     init(mode: Mode,
          data: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
          @ViewBuilder content: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
-                  binding: .constant(nil),
+                  trigger: .constant(nil),
                   data: data,
                   itemSpacing: itemSpacing,
                   content: content)
@@ -188,21 +188,21 @@ public extension FlowLayout {
     @available(swift, obsoleted: 1.1.0, renamed: "attemptConnection")
     var viewMapping: (Data.Element) -> Content { content }
 
-    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:binding:data:itemSpacing:content:)")
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:trigger:data:itemSpacing:content:)")
     init(mode: Mode,
-         binding: Binding<RefreshBinding>,
+         binding: Binding<Trigger>,
          items: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
          @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
-                  binding: binding,
+                  trigger: binding,
                   data: items,
                   itemSpacing: itemSpacing,
                   content: viewMapping)
     }
 }
 
-public extension FlowLayout where RefreshBinding == Never? {
+public extension FlowLayout where Trigger == Never? {
     @available(swift, obsoleted: 1.1.0, renamed: "init(mode:data:itemSpacing:content:)")
     init(mode: Mode,
          items: Data,
@@ -210,7 +210,7 @@ public extension FlowLayout where RefreshBinding == Never? {
          @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
         self.init(
             mode: mode,
-            binding: .constant(nil),
+            trigger: .constant(nil),
             data: items,
             itemSpacing: itemSpacing,
             content: viewMapping

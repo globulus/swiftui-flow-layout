@@ -6,7 +6,7 @@ public struct FlowLayout<Trigger, Data, Content>: View where Data: RandomAccessC
   let mode: Mode
   @Binding var trigger: Trigger
   let data: Data
-  let itemSpacing: CGFloat
+  let spacing: CGFloat
   @ViewBuilder let content: (Data.Element) -> Content
 
   @State private var totalHeight: CGFloat
@@ -14,12 +14,12 @@ public struct FlowLayout<Trigger, Data, Content>: View where Data: RandomAccessC
   public init(mode: Mode,
               trigger: Binding<Trigger>,
               data: Data,
-              itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+              spacing: CGFloat = flowLayoutDefaultItemSpacing,
               @ViewBuilder content: @escaping (Data.Element) -> Content) {
     self.mode = mode
     _trigger = trigger
     self.data = data
-    self.itemSpacing = itemSpacing
+    self.spacing = spacing
     self.content = content
     _totalHeight = State(initialValue: (mode == .scrollable) ? .zero : .infinity)
   }
@@ -47,7 +47,7 @@ public struct FlowLayout<Trigger, Data, Content>: View where Data: RandomAccessC
     return ZStack(alignment: .topLeading) {
         ForEach(Array(data.enumerated()), id: \.offset) { index, item in
             content(item)
-              .padding([.horizontal, .vertical], itemSpacing)
+              .padding([.horizontal, .vertical], spacing)
               .alignmentGuide(.leading, computeValue: { d in
                 if (abs(width - d.width) > g.size.width) {
                   width = 0
@@ -101,12 +101,12 @@ private struct HeightReaderView: View {
 public extension FlowLayout where Trigger == Never? {
     init(mode: Mode,
          data: Data,
-         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+         spacing: CGFloat = flowLayoutDefaultItemSpacing,
          @ViewBuilder content: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
                   trigger: .constant(nil),
                   data: data,
-                  itemSpacing: itemSpacing,
+                  spacing: spacing,
                   content: content)
     }
 }
@@ -188,7 +188,7 @@ public extension FlowLayout {
     @available(swift, obsoleted: 1.1.0, renamed: "attemptConnection")
     var viewMapping: (Data.Element) -> Content { content }
 
-    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:trigger:data:itemSpacing:content:)")
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:trigger:data:spacing:content:)")
     init(mode: Mode,
          binding: Binding<Trigger>,
          items: Data,
@@ -197,13 +197,13 @@ public extension FlowLayout {
         self.init(mode: mode,
                   trigger: binding,
                   data: items,
-                  itemSpacing: itemSpacing,
+                  spacing: itemSpacing,
                   content: viewMapping)
     }
 }
 
 public extension FlowLayout where Trigger == Never? {
-    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:data:itemSpacing:content:)")
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:data:spacing:content:)")
     init(mode: Mode,
          items: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
@@ -212,7 +212,7 @@ public extension FlowLayout where Trigger == Never? {
             mode: mode,
             trigger: .constant(nil),
             data: items,
-            itemSpacing: itemSpacing,
+            spacing: itemSpacing,
             content: viewMapping
         )
     }

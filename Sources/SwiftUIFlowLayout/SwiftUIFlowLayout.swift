@@ -165,3 +165,18 @@ struct TestWithDeletion_Previews: PreviewProvider {
     TestWithDeletion()
   }
 }
+
+struct TestWithRange_Previews: PreviewProvider {
+    static var previews: some View {
+        FlowLayout(mode: .scrollable,
+                   items: 1..<100) {
+            Text("\($0)")
+                .font(.system(size: 12))
+                .foregroundColor(.black)
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 4)
+                    .border(Color.gray)
+                    .foregroundColor(Color.gray))
+        }.padding()
+    }
+}

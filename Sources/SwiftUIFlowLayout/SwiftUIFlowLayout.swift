@@ -2,20 +2,20 @@ import SwiftUI
 
 public let flowLayoutDefaultItemSpacing: CGFloat = 4
 
-public struct FlowLayout<RefreshBinding, Data, ItemView: View>: View {
+public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView: View>: View where Data.Element: Hashable {
   let mode: Mode
   @Binding var binding: RefreshBinding
-  let items: [Data]
+  let items: Data
   let itemSpacing: CGFloat
-  @ViewBuilder let viewMapping: (Data) -> ItemView
+  @ViewBuilder let viewMapping: (Data.Element) -> ItemView
 
   @State private var totalHeight: CGFloat
 
   public init(mode: Mode,
               binding: Binding<RefreshBinding>,
-              items: [Data],
+              items: Data,
               itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
-              @ViewBuilder viewMapping: @escaping (Data) -> ItemView) {
+              @ViewBuilder viewMapping: @escaping (Data.Element) -> ItemView) {
     self.mode = mode
     _binding = binding
     self.items = items
@@ -100,9 +100,9 @@ private struct HeightReaderView: View {
 
 public extension FlowLayout where RefreshBinding == Never? {
     init(mode: Mode,
-         items: [Data],
+         items: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
-         @ViewBuilder viewMapping: @escaping (Data) -> ItemView) {
+         @ViewBuilder viewMapping: @escaping (Data.Element) -> ItemView) {
         self.init(mode: mode,
                   binding: .constant(nil),
                   items: items,

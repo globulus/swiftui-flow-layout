@@ -180,3 +180,39 @@ struct TestWithRange_Previews: PreviewProvider {
         }.padding()
     }
 }
+
+// MARK: Migration Helpers
+
+public extension FlowLayout {
+    @available(swift, obsoleted: 1.1.0, renamed: "attemptConnection")
+    var viewMapping: (Data.Element) -> Content { content }
+
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:binding:items:itemSpacing:content:)")
+    init(mode: Mode,
+         binding: Binding<RefreshBinding>,
+         items: Data,
+         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+         @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
+        self.init(mode: mode,
+                  binding: binding,
+                  items: items,
+                  itemSpacing: itemSpacing,
+                  content: viewMapping)
+    }
+}
+
+public extension FlowLayout where RefreshBinding == Never? {
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:items:itemSpacing:content:)")
+    init(mode: Mode,
+         items: Data,
+         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+         @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
+        self.init(
+            mode: mode,
+            binding: .constant(nil),
+            items: items,
+            itemSpacing: itemSpacing,
+            content: viewMapping
+        )
+    }
+}

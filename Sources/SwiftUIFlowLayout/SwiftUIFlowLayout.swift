@@ -5,7 +5,7 @@ public let flowLayoutDefaultItemSpacing: CGFloat = 4
 public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
   let mode: Mode
   @Binding var binding: RefreshBinding
-  let items: Data
+  let data: Data
   let itemSpacing: CGFloat
   @ViewBuilder let content: (Data.Element) -> Content
 
@@ -13,12 +13,12 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: 
 
   public init(mode: Mode,
               binding: Binding<RefreshBinding>,
-              items: Data,
+              data: Data,
               itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
               @ViewBuilder content: @escaping (Data.Element) -> Content) {
     self.mode = mode
     _binding = binding
-    self.items = items
+    self.data = data
     self.itemSpacing = itemSpacing
     self.content = content
     _totalHeight = State(initialValue: (mode == .scrollable) ? .zero : .infinity)
@@ -43,9 +43,9 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: 
     var width = CGFloat.zero
     var height = CGFloat.zero
     var lastHeight = CGFloat.zero
-    let itemCount = items.count
+    let itemCount = data.count
     return ZStack(alignment: .topLeading) {
-        ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+        ForEach(Array(data.enumerated()), id: \.offset) { index, item in
             content(item)
               .padding([.horizontal, .vertical], itemSpacing)
               .alignmentGuide(.leading, computeValue: { d in
@@ -100,12 +100,12 @@ private struct HeightReaderView: View {
 
 public extension FlowLayout where RefreshBinding == Never? {
     init(mode: Mode,
-         items: Data,
+         data: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
          @ViewBuilder content: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
                   binding: .constant(nil),
-                  items: items,
+                  data: data,
                   itemSpacing: itemSpacing,
                   content: content)
     }
@@ -114,7 +114,7 @@ public extension FlowLayout where RefreshBinding == Never? {
 struct FlowLayout_Previews: PreviewProvider {
   static var previews: some View {
     FlowLayout(mode: .scrollable,
-               items: ["Some long item here", "And then some longer one",
+               data: ["Some long item here", "And then some longer one",
                       "Short", "Items", "Here", "And", "A", "Few", "More",
                       "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]) {
       Text($0)
@@ -129,25 +129,26 @@ struct FlowLayout_Previews: PreviewProvider {
 }
 
 struct TestWithDeletion: View {
-    @State private var items = ["Some long item here", "And then some longer one",
+    @State private var data = ["Some long item here", "And then some longer one",
                                 "Short", "Items", "Here", "And", "A", "Few", "More",
                                 "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]
     
     var body: some View {
         VStack {
         Button("Delete all") {
-            items.removeAll()
+            data.removeAll()
         }
             Button("Restore") {
-                items = ["Some long item here", "And then some longer one",
+                data = ["Some long item here", "And then some longer one",
                          "Short", "Items", "Here", "And", "A", "Few", "More",
                          "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]
             }
             Button("Add one") {
-                items.append("\(Date().timeIntervalSince1970)")
+                data.append("\(Date().timeIntervalSince1970)")
             }
         FlowLayout(mode: .vstack,
-                   items: items) {
+                   data: data) {
+
           Text($0)
             .font(.system(size: 12))
             .foregroundColor(.black)
@@ -169,7 +170,7 @@ struct TestWithDeletion_Previews: PreviewProvider {
 struct TestWithRange_Previews: PreviewProvider {
     static var previews: some View {
         FlowLayout(mode: .scrollable,
-                   items: 1..<100) {
+                   data: 1..<100) {
             Text("\($0)")
                 .font(.system(size: 12))
                 .foregroundColor(.black)
@@ -187,7 +188,7 @@ public extension FlowLayout {
     @available(swift, obsoleted: 1.1.0, renamed: "attemptConnection")
     var viewMapping: (Data.Element) -> Content { content }
 
-    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:binding:items:itemSpacing:content:)")
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:binding:data:itemSpacing:content:)")
     init(mode: Mode,
          binding: Binding<RefreshBinding>,
          items: Data,
@@ -195,14 +196,14 @@ public extension FlowLayout {
          @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
                   binding: binding,
-                  items: items,
+                  data: items,
                   itemSpacing: itemSpacing,
                   content: viewMapping)
     }
 }
 
 public extension FlowLayout where RefreshBinding == Never? {
-    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:items:itemSpacing:content:)")
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:data:itemSpacing:content:)")
     init(mode: Mode,
          items: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
@@ -210,7 +211,7 @@ public extension FlowLayout where RefreshBinding == Never? {
         self.init(
             mode: mode,
             binding: .constant(nil),
-            items: items,
+            data: items,
             itemSpacing: itemSpacing,
             content: viewMapping
         )

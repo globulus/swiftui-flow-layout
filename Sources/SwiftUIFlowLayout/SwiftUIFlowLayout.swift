@@ -2,12 +2,12 @@ import SwiftUI
 
 public let flowLayoutDefaultItemSpacing: CGFloat = 4
 
-public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView: View>: View where Data.Element: Hashable {
+public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
   let mode: Mode
   @Binding var binding: RefreshBinding
   let items: Data
   let itemSpacing: CGFloat
-  @ViewBuilder let viewMapping: (Data.Element) -> ItemView
+  @ViewBuilder let content: (Data.Element) -> Content
 
   @State private var totalHeight: CGFloat
 
@@ -15,12 +15,12 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView:
               binding: Binding<RefreshBinding>,
               items: Data,
               itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
-              @ViewBuilder viewMapping: @escaping (Data.Element) -> ItemView) {
+              @ViewBuilder content: @escaping (Data.Element) -> Content) {
     self.mode = mode
     _binding = binding
     self.items = items
     self.itemSpacing = itemSpacing
-    self.viewMapping = viewMapping
+    self.content = content
     _totalHeight = State(initialValue: (mode == .scrollable) ? .zero : .infinity)
   }
 
@@ -46,7 +46,7 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView:
     let itemCount = items.count
     return ZStack(alignment: .topLeading) {
         ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-            viewMapping(item)
+            content(item)
               .padding([.horizontal, .vertical], itemSpacing)
               .alignmentGuide(.leading, computeValue: { d in
                 if (abs(width - d.width) > g.size.width) {
@@ -102,12 +102,12 @@ public extension FlowLayout where RefreshBinding == Never? {
     init(mode: Mode,
          items: Data,
          itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
-         @ViewBuilder viewMapping: @escaping (Data.Element) -> ItemView) {
+         @ViewBuilder content: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
                   binding: .constant(nil),
                   items: items,
                   itemSpacing: itemSpacing,
-                  viewMapping: viewMapping)
+                  content: content)
     }
 }
 

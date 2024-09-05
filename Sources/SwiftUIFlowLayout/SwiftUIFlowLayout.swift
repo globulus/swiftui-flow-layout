@@ -1,6 +1,6 @@
 import SwiftUI
 
-public let flowLayoutDefaultItemSpacing: CGFloat = 4
+public let flowLayoutDefaultItemSpacing: CGFloat = 8
 
 public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View {
   let mode: Mode

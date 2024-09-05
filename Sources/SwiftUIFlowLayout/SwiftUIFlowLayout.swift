@@ -2,25 +2,25 @@ import SwiftUI
 
 public let flowLayoutDefaultItemSpacing: CGFloat = 4
 
-public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView: View>: View where Data.Element: Hashable {
+public struct FlowLayout<Trigger, Data, Content>: View where Data: RandomAccessCollection, Data.Element: Hashable, Content: View {
   let mode: Mode
-  @Binding var binding: RefreshBinding
-  let items: Data
-  let itemSpacing: CGFloat
-  @ViewBuilder let viewMapping: (Data.Element) -> ItemView
+  @Binding var trigger: Trigger
+  let data: Data
+  let spacing: CGFloat
+  @ViewBuilder let content: (Data.Element) -> Content
 
   @State private var totalHeight: CGFloat
 
   public init(mode: Mode,
-              binding: Binding<RefreshBinding>,
-              items: Data,
-              itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
-              @ViewBuilder viewMapping: @escaping (Data.Element) -> ItemView) {
+              trigger: Binding<Trigger>,
+              data: Data,
+              spacing: CGFloat = flowLayoutDefaultItemSpacing,
+              @ViewBuilder content: @escaping (Data.Element) -> Content) {
     self.mode = mode
-    _binding = binding
-    self.items = items
-    self.itemSpacing = itemSpacing
-    self.viewMapping = viewMapping
+    _trigger = trigger
+    self.data = data
+    self.spacing = spacing
+    self.content = content
     _totalHeight = State(initialValue: (mode == .scrollable) ? .zero : .infinity)
   }
 
@@ -43,11 +43,11 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView:
     var width = CGFloat.zero
     var height = CGFloat.zero
     var lastHeight = CGFloat.zero
-    let itemCount = items.count
+    let itemCount = data.count
     return ZStack(alignment: .topLeading) {
-        ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-            viewMapping(item)
-              .padding([.horizontal, .vertical], itemSpacing)
+        ForEach(Array(data.enumerated()), id: \.offset) { index, item in
+            content(item)
+              .padding([.horizontal, .vertical], spacing)
               .alignmentGuide(.leading, computeValue: { d in
                 if (abs(width - d.width) > g.size.width) {
                   width = 0
@@ -71,7 +71,7 @@ public struct FlowLayout<RefreshBinding, Data: RandomAccessCollection, ItemView:
               })
         }
       }
-      .background(HeightReaderView(binding: $totalHeight))
+      .background(HeightReaderView(trigger: $totalHeight))
   }
 
   public enum Mode {
@@ -85,36 +85,36 @@ private struct HeightPreferenceKey: PreferenceKey {
 }
 
 private struct HeightReaderView: View {
-  @Binding var binding: CGFloat
+  @Binding var trigger: CGFloat
   var body: some View {
     GeometryReader { geo in
       Color.clear
            .preference(key: HeightPreferenceKey.self, value: geo.frame(in: .local).size.height)
     }
     .onPreferenceChange(HeightPreferenceKey.self) { h in
-      binding = h
+      trigger = h
     }
   }
 }
 
 
-public extension FlowLayout where RefreshBinding == Never? {
+public extension FlowLayout where Trigger == Never? {
     init(mode: Mode,
-         items: Data,
-         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
-         @ViewBuilder viewMapping: @escaping (Data.Element) -> ItemView) {
+         data: Data,
+         spacing: CGFloat = flowLayoutDefaultItemSpacing,
+         @ViewBuilder content: @escaping (Data.Element) -> Content) {
         self.init(mode: mode,
-                  binding: .constant(nil),
-                  items: items,
-                  itemSpacing: itemSpacing,
-                  viewMapping: viewMapping)
+                  trigger: .constant(nil),
+                  data: data,
+                  spacing: spacing,
+                  content: content)
     }
 }
 
 struct FlowLayout_Previews: PreviewProvider {
   static var previews: some View {
     FlowLayout(mode: .scrollable,
-               items: ["Some long item here", "And then some longer one",
+               data: ["Some long item here", "And then some longer one",
                       "Short", "Items", "Here", "And", "A", "Few", "More",
                       "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]) {
       Text($0)
@@ -129,25 +129,26 @@ struct FlowLayout_Previews: PreviewProvider {
 }
 
 struct TestWithDeletion: View {
-    @State private var items = ["Some long item here", "And then some longer one",
+    @State private var data = ["Some long item here", "And then some longer one",
                                 "Short", "Items", "Here", "And", "A", "Few", "More",
                                 "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]
     
     var body: some View {
         VStack {
         Button("Delete all") {
-            items.removeAll()
+            data.removeAll()
         }
             Button("Restore") {
-                items = ["Some long item here", "And then some longer one",
+                data = ["Some long item here", "And then some longer one",
                          "Short", "Items", "Here", "And", "A", "Few", "More",
                          "And then a very very very long long long long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long longlong long long long long long long long one", "and", "then", "some", "short short short ones"]
             }
             Button("Add one") {
-                items.append("\(Date().timeIntervalSince1970)")
+                data.append("\(Date().timeIntervalSince1970)")
             }
         FlowLayout(mode: .vstack,
-                   items: items) {
+                   data: data) {
+
           Text($0)
             .font(.system(size: 12))
             .foregroundColor(.black)
@@ -169,7 +170,7 @@ struct TestWithDeletion_Previews: PreviewProvider {
 struct TestWithRange_Previews: PreviewProvider {
     static var previews: some View {
         FlowLayout(mode: .scrollable,
-                   items: 1..<100) {
+                   data: 1..<100) {
             Text("\($0)")
                 .font(.system(size: 12))
                 .foregroundColor(.black)
@@ -178,5 +179,41 @@ struct TestWithRange_Previews: PreviewProvider {
                     .border(Color.gray)
                     .foregroundColor(Color.gray))
         }.padding()
+    }
+}
+
+// MARK: Migration Helpers
+
+public extension FlowLayout {
+    @available(swift, obsoleted: 1.1.0, renamed: "attemptConnection")
+    var viewMapping: (Data.Element) -> Content { content }
+
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:trigger:data:spacing:content:)")
+    init(mode: Mode,
+         binding: Binding<Trigger>,
+         items: Data,
+         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+         @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
+        self.init(mode: mode,
+                  trigger: binding,
+                  data: items,
+                  spacing: itemSpacing,
+                  content: viewMapping)
+    }
+}
+
+public extension FlowLayout where Trigger == Never? {
+    @available(swift, obsoleted: 1.1.0, renamed: "init(mode:data:spacing:content:)")
+    init(mode: Mode,
+         items: Data,
+         itemSpacing: CGFloat = flowLayoutDefaultItemSpacing,
+         @ViewBuilder viewMapping: @escaping (Data.Element) -> Content) {
+        self.init(
+            mode: mode,
+            trigger: .constant(nil),
+            data: items,
+            spacing: itemSpacing,
+            content: viewMapping
+        )
     }
 }

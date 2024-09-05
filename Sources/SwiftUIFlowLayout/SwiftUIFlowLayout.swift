@@ -40,14 +40,23 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
   }
 
   private func content(in g: GeometryProxy) -> some View {
-    var width = CGFloat.zero
     var height = CGFloat.zero
+    var width = CGFloat.zero {
+      didSet {
+        if width == 0 {
+          row = 0
+        } else {
+          row += 1
+        }
+      }
+    }
+    var row = 0
     var lastHeight = CGFloat.zero
     let itemCount = items.count
     return ZStack(alignment: .topLeading) {
         ForEach(Array(items.enumerated()), id: \.offset) { index, item in
             viewMapping(item)
-              .padding([.horizontal, .vertical], itemSpacing)
+              .padding([.vertical], itemSpacing)
               .alignmentGuide(.leading, computeValue: { d in
                 if (abs(width - d.width) > g.size.width) {
                   width = 0
@@ -55,12 +64,13 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
                 }
                 lastHeight = d.height
                 let result = width
+                let extraWidth = -itemSpacing * CGFloat(row)
                 if index == itemCount - 1 {
                   width = 0
                 } else {
                   width -= d.width
                 }
-                return result
+                return result + extraWidth
               })
               .alignmentGuide(.top, computeValue: { d in
                 let result = height

@@ -71,22 +71,22 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
                   height -= lastHeight
                 }
                 lastHeight = d.height
-                let result = width
+                let currentWidth = width
                 let extraWidth = -itemSpacing * CGFloat(row)
                 if index == itemCount - 1 {
                   width = 0
                 } else {
                   width -= d.width
                 }
-                return result + extraWidth
+                return currentWidth + extraWidth
               })
               .alignmentGuide(.top, computeValue: { d in
-                let result = height
+                let currentHeight = height
                 let extraHeight = -itemSpacing * CGFloat(column)
                 if index == itemCount - 1 {
                   height = 0
                 }
-                return result + extraHeight
+                return currentHeight + extraHeight
               })
         }
       }

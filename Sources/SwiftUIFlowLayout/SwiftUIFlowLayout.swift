@@ -43,16 +43,6 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
     var width = CGFloat.zero {
       didSet {
         if width == 0 {
-          row = 0
-        } else {
-          row += 1
-        }
-      }
-    }
-    var row = 0
-    var height = CGFloat.zero{
-      didSet {
-        if height == 0 {
           column = 0
         } else {
           column += 1
@@ -60,6 +50,16 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
       }
     }
     var column = 0
+    var height = CGFloat.zero{
+      didSet {
+        if height == 0 {
+          row = 0
+        } else {
+          row += 1
+        }
+      }
+    }
+    var row = 0
     var lastHeight = CGFloat.zero
     let itemCount = items.count
     return ZStack(alignment: .topLeading) {
@@ -72,7 +72,7 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
                 }
                 lastHeight = d.height
                 let currentWidth = width
-                let extraWidth = -itemSpacing * CGFloat(row)
+                let extraWidth = -itemSpacing * CGFloat(column)
                 if index == itemCount - 1 {
                   width = 0
                 } else {
@@ -82,7 +82,7 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
               })
               .alignmentGuide(.top, computeValue: { d in
                 let currentHeight = height
-                let extraHeight = -itemSpacing * CGFloat(column)
+                let extraHeight = -itemSpacing * CGFloat(row)
                 if index == itemCount - 1 {
                   height = 0
                 }

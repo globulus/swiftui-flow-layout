@@ -1,6 +1,6 @@
 import SwiftUI
 
-public let flowLayoutDefaultItemSpacing: CGFloat = 4
+public let flowLayoutDefaultItemSpacing: CGFloat = 8
 
 public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View {
   let mode: Mode
@@ -40,34 +40,53 @@ public struct FlowLayout<RefreshBinding, Data: Collection, ItemView: View>: View
   }
 
   private func content(in g: GeometryProxy) -> some View {
-    var width = CGFloat.zero
-    var height = CGFloat.zero
+    var width = CGFloat.zero {
+      didSet {
+        if width == 0 {
+          column = 0
+        } else {
+          column += 1
+        }
+      }
+    }
+    var column = 0
+    var height = CGFloat.zero{
+      didSet {
+        if height == 0 {
+          row = 0
+        } else {
+          row += 1
+        }
+      }
+    }
+    var row = 0
     var lastHeight = CGFloat.zero
     let itemCount = items.count
     return ZStack(alignment: .topLeading) {
         ForEach(Array(items.enumerated()), id: \.offset) { index, item in
             viewMapping(item)
-              .padding([.horizontal, .vertical], itemSpacing)
               .alignmentGuide(.leading, computeValue: { d in
                 if (abs(width - d.width) > g.size.width) {
                   width = 0
                   height -= lastHeight
                 }
                 lastHeight = d.height
-                let result = width
+                let currentWidth = width
+                let extraWidth = -itemSpacing * CGFloat(column)
                 if index == itemCount - 1 {
                   width = 0
                 } else {
                   width -= d.width
                 }
-                return result
+                return currentWidth + extraWidth
               })
               .alignmentGuide(.top, computeValue: { d in
-                let result = height
+                let currentHeight = height
+                let extraHeight = -itemSpacing * CGFloat(row)
                 if index == itemCount - 1 {
                   height = 0
                 }
-                return result
+                return currentHeight + extraHeight
               })
         }
       }
